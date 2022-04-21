@@ -16,7 +16,7 @@ namespace WindowsFormsApp1
         public Form1()
         {
             InitializeComponent();
-            currency.rand();
+            currency.value = currency.value_index;
             textBox3.Text = currency.value.ToString();
             foreach (var item in currency.convert)
             {
@@ -36,23 +36,39 @@ namespace WindowsFormsApp1
         }
         private void input_Click(object sender, EventArgs e)
         {
-            currency.calc(
+            if (textBox6.Text != "")
+            {
+                currency.calc(
                 "add",
                 Convert.ToDouble(textBox6.Text),
                 currency.convert.ElementAt(comboBox1.SelectedIndex).Key,
                 currency.convert.ElementAt(comboBox2.SelectedIndex).Key
                 );
-            restart();
+                restart();
+            }
+            else
+                MessageBox.Show("Ты забыл чет написать =/");
         }
 
         private void output_Click(object sender, EventArgs e)
         {
-            currency.calc(
-                "vivod",
-                Convert.ToDouble(textBox6.Text),
-                currency.convert.ElementAt(comboBox1.SelectedIndex).Key,
-                currency.convert.ElementAt(comboBox2.SelectedIndex).Key
-                );
+            if (textBox6.Text != "")
+            {
+                currency.calc(
+                    "vivod",
+                    Convert.ToDouble(textBox6.Text),
+                    currency.convert.ElementAt(comboBox1.SelectedIndex).Key,
+                    currency.convert.ElementAt(comboBox2.SelectedIndex).Key
+                    );
+                restart();
+            }
+            else
+                MessageBox.Show("Ты забыл чет написать =/");
+        }
+
+        private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            currency.value = currency.value_index * Convert.ToDouble(currency.convert.ElementAt(comboBox1.SelectedIndex).Value);
             restart();
         }
     }
@@ -75,23 +91,26 @@ namespace WindowsFormsApp1
                     value = value - exalted;
             else
             {
-                var usd_main_value = com(value / Convert.ToDouble(convert[name_of_main_currency]));
-                var usd_transfer_value = com(exalted / Convert.ToDouble(convert[name_of_transfer_name_currency]));
+                var usd_main_value = value / Convert.ToDouble(convert[name_of_main_currency]);
+                var usd_transfer_value = exalted / Convert.ToDouble(convert[name_of_transfer_name_currency]);
                 if (method == "add")
-                    value = (usd_main_value + usd_transfer_value) * Convert.ToDouble(convert[name_of_main_currency]);
+                {
+                    value = (usd_main_value + com(usd_transfer_value)) * Convert.ToDouble(convert[name_of_main_currency]);
+                    value_index = usd_main_value + usd_transfer_value;
+                }
                 else
-                    value = (usd_main_value - usd_transfer_value) * Convert.ToDouble(convert[name_of_main_currency]);
+                {
+                    value = (usd_main_value - com(usd_transfer_value)) * Convert.ToDouble(convert[name_of_main_currency]);
+                    value_index = usd_main_value + usd_transfer_value;
+                }
             }
-        }
-        public void rand()
-        {
-            value = rnd.Next(10000, 20000);
         }
     }
     class Billy
     {
         public Random rnd = new Random();
-        public double value;
+        public double value = 10000;
+        public double value_index = 10000;
         public double com(double exalted)
         {
             return exalted - exalted/100;

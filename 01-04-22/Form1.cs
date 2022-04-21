@@ -1,83 +1,100 @@
-namespace _01_04_22
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+
+namespace WindowsFormsApp1
 {
     public partial class Form1 : Form
     {
-        Currency cur = new Currency();
+        Currency currency = new Currency();
         public Form1()
         {
             InitializeComponent();
-            cur.rand();
-            cur.main_index = cur.rnd.Next(0, 5);
-            main_box.Items.Add(cur.currency_dict[cur.main_index].Split(" ")[0]);
-            for (int _ = 0; _ < 5; _++)
+            currency.rand();
+            textBox3.Text = currency.value.ToString();
+            foreach (var item in currency.convert)
             {
-                transfer_box.Items.Add(cur.currency_dict[_].Split(" ")[0]);
+                comboBox1.Items.Add(item.Key);
+                comboBox2.Items.Add(item.Key);
             }
             restart();
         }
         public void restart()
         {
-            main_value.Text = $"Баланс : {cur.main}";
-            transfer_value.Text = "";
+            textBox3.Text = currency.value.ToString();
+            textBox6.Text = "";
         }
-
-        private void add_buton_Click(object sender, EventArgs e)
+        private void Form1_Load(object sender, EventArgs e)
         {
-            cur.main = cur.calc(0, cur.main, Convert.ToDouble(transfer_value.Text.ToString()),transfer_box.SelectedIndex);
+
+        }
+        private void input_Click(object sender, EventArgs e)
+        {
+            currency.calc(
+                "add",
+                Convert.ToDouble(textBox6.Text),
+                currency.convert.ElementAt(comboBox1.SelectedIndex).Key,
+                currency.convert.ElementAt(comboBox2.SelectedIndex).Key
+                );
             restart();
         }
 
-        private void delete_Click(object sender, EventArgs e)
+        private void output_Click(object sender, EventArgs e)
         {
-            cur.main = cur.calc(1, cur.main, Convert.ToDouble(transfer_value.Text.ToString()), transfer_box.SelectedIndex);
+            currency.calc(
+                "vivod",
+                Convert.ToDouble(textBox6.Text),
+                currency.convert.ElementAt(comboBox1.SelectedIndex).Key,
+                currency.convert.ElementAt(comboBox2.SelectedIndex).Key
+                );
             restart();
         }
     }
-    class Currency
+    class Currency : Billy
     {
-        public Random rnd = new Random();
-        public double main;
-        public int main_index;
-        public Dictionary<int,string> currency_dict = new Dictionary<int, string>()
+        public Dictionary<string, string> convert = new Dictionary<string, string>()
                 {
-                { 0, "RUR 83" },
-                { 1, "EUR 0,90" },
-                { 2, "USD 1" },
-                { 3, "GBP 0,76" },
-                { 4, "KGS 93,10" },
-                };
+                { "USD", "1" },
+                { "EUR", "0,93" },
+                { "RUB", "83" },
+                { "PLN", "0,23" },
+                { "KAD", "0,79" }};
+    
+        public void calc(string method, double exalted, string name_of_main_currency, string name_of_transfer_name_currency)
+        {
+            if (name_of_main_currency == name_of_transfer_name_currency)
+                if (method == "add")
+                    value = value + exalted;
+                else
+                    value = value - exalted;
+            else
+            {
+                var usd_main_value = com(value / Convert.ToDouble(convert[name_of_main_currency]));
+                var usd_transfer_value = com(exalted / Convert.ToDouble(convert[name_of_transfer_name_currency]));
+                if (method == "add")
+                    value = (usd_main_value + usd_transfer_value) * Convert.ToDouble(convert[name_of_main_currency]);
+                else
+                    value = (usd_main_value - usd_transfer_value) * Convert.ToDouble(convert[name_of_main_currency]);
+            }
+        }
         public void rand()
         {
-            main = rnd.Next(10000, 20000);
+            value = rnd.Next(10000, 20000);
         }
-        public double com(double value)
+    }
+    class Billy
+    {
+        public Random rnd = new Random();
+        public double value;
+        public double com(double exalted)
         {
-            return value - value / 100;
-        }
-        public double calc(int choice, double main,double value, int value_index)
-        {
-            double end_value;
-            if (!(main_index == value_index))
-            {
-                var main_usd = main * Convert.ToDouble(currency_dict[Convert.ToInt32(main_index)].Split(" ")[1]);
-                main_usd = main_usd - com(main_usd);
-                var add_usd = value * Convert.ToDouble(currency_dict[value_index].Split(" ")[1]);
-                add_usd = add_usd - com(add_usd);
-                if (choice == 0)
-                {
-                    end_value = (main_usd + add_usd) * Convert.ToDouble(currency_dict[main_index].Split(" ")[1]);
-                }
-                else
-                {
-                    end_value = (main_usd - add_usd) * Convert.ToDouble(currency_dict[main_index].Split(" ")[1]);
-                }
-                return end_value - com(end_value);
-            }
-            else
-                if (choice == 0)
-                return main + value;
-            else
-                return main - value;
+            return exalted - exalted/100;
         }
     }
 }
